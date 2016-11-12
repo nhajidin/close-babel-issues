@@ -8,6 +8,10 @@
   "scripts": {
     "start": "node -r babel-register ./src/index.js"
   },
+  "dependencies": {
+    "github": "^6.0.4",
+    "lodash": "^4.16.6"
+  },
   "devDependencies": {
     "babel-eslint": "^7.1.0",
     "babel-preset-env": "^0.0.7",

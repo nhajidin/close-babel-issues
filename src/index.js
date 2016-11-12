@@ -1,11 +1,24 @@
 import GitHubApi from "github";
 import _ from "lodash";
 
+import auth from "../auth.json";
+
 const github = new GitHubApi({
   protocol: "https",
   Promise,
   timeout: 5000,
 });
+
+github.authenticate({
+  type: "oauth",
+  token: auth.token,
+});
+
+
+const repo = {
+  owner: "babel",
+  repo: "babel",
+};
 
 function processPulls(pulls) {
   _.forEach(pulls, (pull) => {
@@ -22,19 +35,45 @@ function processPulls(pulls) {
 
     console.log(`Processing PR${pull.number}`);
 
-    console.log(` Match: ${issues[0]}`);
-
     // single issue
     if (issues[1]) {
-      console.log(` ${issues[1]}`);
+      processIssue(issues[1]);
       return;
     }
 
     // multiple issues
     issues[2].replace(/\s|#/g, "")
       .split(",")
-      .forEach((issue) => console.log(` ${issue}`));
+      .forEach(processIssue);
   });
+}
+
+async function processIssue(number) {
+  console.log(`Processing issue #${number}`);
+  const issueParam = { ...repo, number };
+
+  let issue;
+  try {
+    issue = await github.issues.get(issueParam);
+    if (!issue) {
+      console.log("Couldn't retrieve issue.");
+      return;
+    }
+  } catch (err) {
+    console.log(`Couldn't retrieve issue #${number}: ${err}`);
+  }
+
+  if (issue.state === "closed") {
+    console.log(`Issue #${number} is already closed.`);
+    return;
+  }
+
+  try {
+    // close issue
+    await github.issues.edit({ ...issueParam, state: "closed" });
+  } catch (err) {
+    console.log(`Error closing issue: ${err}`);
+  }
 }
 
 async function pager(res) {
@@ -44,14 +83,17 @@ async function pager(res) {
 
   while (github.hasNextPage(pulls)) {
     pulls = await github.getNextPage(pulls);
+    if (!pulls) {
+      break;
+    }
+
     processPulls(pulls);
   }
 }
 
 github.pullRequests
   .getAll({
-    owner: "babel",
-    repo: "babel",
+    ...repo,
     state: "closed",
     per_page: 99,
   })

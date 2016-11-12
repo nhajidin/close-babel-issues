@@ -3,7 +3,12 @@
     ["env", {
       "targets": {
         "node": "current"
-      }
+      },
+      "whitelist": [
+        "transform-es2015-destructuring",
+        "transform-es2015-parameters"
+      ]
     }]
-  ]
+  ],
+  "plugins": ["transform-object-rest-spread"]
 }

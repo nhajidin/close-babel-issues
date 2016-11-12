@@ -96,16 +96,17 @@ async function processIssue(number) {
 async function pager(res) {
   let pulls = res;
 
+  let filterPulls = res;
   if (config.endPr) {
-    pulls = _.filter(pulls, (x) => x.number <= config.endPr);
+    filterPulls = _.filter(filterPulls, (x) => x.number <= config.endPr);
   }
 
   if (config.startPr) {
-    pulls = _.filter(pulls, (x) => x.number >= config.startPr);
+    filterPulls = _.filter(filterPulls, (x) => x.number >= config.startPr);
   }
 
-  if (_.size(pulls)) {
-    processPulls(pulls);
+  if (_.size(filterPulls)) {
+    processPulls(filterPulls);
   }
 
   while (github.hasNextPage(pulls)) {
@@ -114,24 +115,26 @@ async function pager(res) {
       break;
     }
 
+    filterPulls = pulls;
+
     if (config.endPr) {
-      pulls = _.filter(pulls, (x) => x.number <= config.endPr);
+      filterPulls = _.filter(filterPulls, (x) => x.number <= config.endPr);
 
       // the PR numbers are greater than the end PR, so skip this batch
-      if (_.size(pulls) === 0) {
+      if (_.size(filterPulls) === 0) {
         continue;
       }
     }
 
     if (config.startPr) {
       // check if there are any PRs greater than the start PR, if not, break from the loop
-      const pulls = _.filter(pulls, (x) => x.number >= config.startPr);
-      if (_.size(pulls) === 0) {
+      filterPulls = _.filter(filterPulls, (x) => x.number >= config.startPr);
+      if (_.size(filterPulls) === 0) {
         break;
       }
     }
 
-    processPulls(pulls);
+    processPulls(filterPulls);
   }
 }
 

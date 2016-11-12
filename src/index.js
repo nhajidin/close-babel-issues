@@ -20,6 +20,8 @@ const repo = {
   repo: "babel",
 };
 
+const closedIssues = [];
+
 function processPulls(pulls) {
   _.forEach(pulls, (pull) => {
     if (!pull.body) {
@@ -50,6 +52,13 @@ function processPulls(pulls) {
 
 async function processIssue(number) {
   console.log(`Processing issue #${number}`);
+  if (closedIssues.includes(number)) {
+    console.log("Issue was already processed.");
+    return;
+  }
+
+  closedIssues.push(number);
+
   const issueParam = { ...repo, number };
 
   let issue;

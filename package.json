@@ -1,0 +1,8 @@
+{
+  "name": "close-babel-issues",
+  "version": "0.1.0",
+  "description": "Close Babel issues from pull requests",
+  "main": "./src/index.js",
+  "author": "Nazim Hajidin <nhajidin@gmail.com>",
+  "license": "MIT"
+}

@@ -24,36 +24,38 @@ const repo = {
 const closedIssues = [];
 
 function processPulls(pulls) {
-  _.forEach(pulls, (pull) => {
-    if (!pull.body) {
-      return;
-    }
+  _.forEach(pulls, processPr);
+}
 
-    // eslint-disable-next-line max-len
-    const regex = /Fixed tickets[\s]*\|[\s]*(?:https:\/\/github\.com\/babel\/babel\/issues\/(\d+)|(#\d+(?:\s*,\s*#\d+)*))/;
-    const issues = pull.body.match(regex);
-    if (issues <= 1) {
-      return;
-    }
+function processPr(pull) {
+  if (!pull.body) {
+    return;
+  }
 
-    console.log(`Processing PR${pull.number}`);
+  // eslint-disable-next-line max-len
+  const regex = /Fixed tickets[\s]*\|[\s]*(?:https:\/\/github\.com\/babel\/babel\/issues\/(\d+)|(#\d+(?:\s*,\s*#\d+)*))/;
+  const issues = pull.body.match(regex);
+  if (issues <= 1) {
+    return;
+  }
 
-    if (!pull.merged_at) {
-      console.log("The pull request was not merged.");
-      return;
-    }
+  console.log(`Processing PR${pull.number}`);
 
-    // single issue
-    if (issues[1]) {
-      processIssue(issues[1]);
-      return;
-    }
+  if (!pull.merged_at) {
+    console.log("The pull request was not merged.");
+    return;
+  }
 
-    // multiple issues
-    issues[2].replace(/\s|#/g, "")
-      .split(",")
-      .forEach(processIssue);
-  });
+  // single issue
+  if (issues[1]) {
+    processIssue(issues[1]);
+    return;
+  }
+
+  // multiple issues
+  issues[2].replace(/\s|#/g, "")
+    .split(",")
+    .forEach(processIssue);
 }
 
 async function processIssue(number) {
@@ -106,11 +108,21 @@ async function pager(res) {
   }
 }
 
-github.pullRequests
-  .getAll({
-    ...repo,
-    state: "closed",
-    per_page: 99,
-  })
-  .then(pager)
-  .catch((err) => console.log("Error: ", err));
+if (config.startPr !== 0 && config.startPr === config.endPr) {
+  github.pullRequests
+    .get({
+      ...repo,
+      number: config.startPr,
+    })
+    .then(processPr)
+    .catch((err) => console.log("Error: ", err));
+} else {
+  github.pullRequests
+    .getAll({
+      ...repo,
+      state: "closed",
+      per_page: 99,
+    })
+    .then(pager)
+    .catch((err) => console.log("Error: ", err));
+}

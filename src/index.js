@@ -37,6 +37,11 @@ function processPulls(pulls) {
 
     console.log(`Processing PR${pull.number}`);
 
+    if (!pull.merged_at) {
+      console.log("The pull request was not merged.");
+      return;
+    }
+
     // single issue
     if (issues[1]) {
       processIssue(issues[1]);

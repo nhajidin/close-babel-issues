@@ -86,7 +86,7 @@ async function processIssue(number) {
     // close issue
     await github.issues.edit({ ...issueParam, state: "closed" });
   } catch (err) {
-    console.log(`Error closing issue: ${err}`);
+    console.log(`Error closing issue #${number}: ${err}`);
   }
 }
 

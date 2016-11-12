@@ -96,12 +96,39 @@ async function processIssue(number) {
 async function pager(res) {
   let pulls = res;
 
-  processPulls(pulls);
+  if (config.endPr) {
+    pulls = _.filter(pulls, (x) => x.number <= config.endPr);
+  }
+
+  if (config.startPr) {
+    pulls = _.filter(pulls, (x) => x.number >= config.startPr);
+  }
+
+  if (_.size(pulls)) {
+    processPulls(pulls);
+  }
 
   while (github.hasNextPage(pulls)) {
     pulls = await github.getNextPage(pulls);
     if (!pulls) {
       break;
+    }
+
+    if (config.endPr) {
+      pulls = _.filter(pulls, (x) => x.number <= config.endPr);
+
+      // the PR numbers are greater than the end PR, so skip this batch
+      if (_.size(pulls) === 0) {
+        continue;
+      }
+    }
+
+    if (config.startPr) {
+      // check if there are any PRs greater than the start PR, if not, break from the loop
+      const pulls = _.filter(pulls, (x) => x.number >= config.startPr);
+      if (_.size(pulls) === 0) {
+        break;
+      }
     }
 
     processPulls(pulls);

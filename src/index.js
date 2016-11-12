@@ -1,7 +1,7 @@
 import GitHubApi from "github";
 import _ from "lodash";
 
-import auth from "../auth.json";
+import config from "./config";
 
 const github = new GitHubApi({
   protocol: "https",
@@ -9,15 +9,16 @@ const github = new GitHubApi({
   timeout: 5000,
 });
 
-github.authenticate({
-  type: "oauth",
-  token: auth.token,
-});
-
+if (config.oauth2) {
+  github.authenticate({
+    type: "oauth",
+    token: config.oauth2,
+  });
+}
 
 const repo = {
-  owner: "babel",
-  repo: "babel",
+  owner: config.owner,
+  repo: config.repo,
 };
 
 const closedIssues = [];

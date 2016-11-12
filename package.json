@@ -4,5 +4,12 @@
   "description": "Close Babel issues from pull requests",
   "main": "./src/index.js",
   "author": "Nazim Hajidin <nhajidin@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "scripts": {
+    "start": "node -r babel-register ./src/index.js"
+  },
+  "devDependencies": {
+    "babel-preset-env": "^0.0.7",
+    "babel-register": "^6.18.0"
+  }
 }

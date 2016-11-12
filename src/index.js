@@ -7,7 +7,7 @@ const github = new GitHubApi({
   timeout: 5000,
 });
 
-function pager(pulls) {
+function processPulls(pulls) {
   _.forEach(pulls, (pull) => {
     if (!pull.body) {
       return;
@@ -35,13 +35,17 @@ function pager(pulls) {
       .split(",")
       .forEach((issue) => console.log(` ${issue}`));
   });
+}
 
-  if (github.hasNextPage(pulls)) {
-    return github.getNextPage(pulls)
-      .then(pager);
+async function pager(res) {
+  let pulls = res;
+
+  processPulls(pulls);
+
+  while (github.hasNextPage(pulls)) {
+    pulls = await github.getNextPage(pulls);
+    processPulls(pulls);
   }
-
-  return Promise.resolve();
 }
 
 github.pullRequests
